@@ -424,9 +424,16 @@ function filterDataByTimeSpan(priceData, span) {
   return filtered.length > 0 ? filtered : priceData;
 }
 
+// Chart instance references & view selection state
+let currentPriceChartInstance = null;
+let currentMacdChartInstance = null;
+let currentRsiChartInstance = null;
+let currentChartView = 'all'; // 'all' | 'price' | 'macd' | 'rsi'
 let currentIndicators = null;
 
 function renderResults(ticker, priceData, indicators, note) {
+  currentTicker = ticker;
+  currentPriceData = priceData;
   currentIndicators = indicators;
   const latest = priceData[priceData.length - 1];
   const prev = priceData.length > 1 ? priceData[priceData.length - 2] : latest;
@@ -627,10 +634,10 @@ function renderResults(ticker, priceData, indicators, note) {
       </div>
     </div>
 
-    <!-- Stock Price Evolution Chart with Overlay Controls -->
+    <!-- Technical Charts Section -->
     <div class="chart-section">
       <div class="chart-header">
-        <h3 class="section-heading">Stock Value Evolution & Overlays</h3>
+        <h3 class="section-heading">Technical Market Charts</h3>
         <div class="time-spans" id="time-span-controls">
           <button type="button" class="span-btn" data-span="1M">1M</button>
           <button type="button" class="span-btn" data-span="3M">3M</button>
@@ -641,27 +648,64 @@ function renderResults(ticker, priceData, indicators, note) {
         </div>
       </div>
 
-      <!-- Indicator Overlays Toggles -->
-      <div class="overlay-toggles" id="overlay-toggles">
-        <span class="overlay-label">Chart Overlays:</span>
-        <label class="toggle-chip ${activeOverlays.sma20 ? 'active' : ''}">
-          <input type="checkbox" id="chk-sma20" ${activeOverlays.sma20 ? 'checked' : ''} />
-          <span class="chip-color chip-cyan"></span> Short SMA (${params.smaShort})
-        </label>
-        <label class="toggle-chip ${activeOverlays.sma50 ? 'active' : ''}">
-          <input type="checkbox" id="chk-sma50" ${activeOverlays.sma50 ? 'checked' : ''} />
-          <span class="chip-color chip-amber"></span> Long SMA (${params.smaLong})
-        </label>
-        <label class="toggle-chip ${activeOverlays.ema20 ? 'active' : ''}">
-          <input type="checkbox" id="chk-ema20" ${activeOverlays.ema20 ? 'checked' : ''} />
-          <span class="chip-color chip-purple"></span> EMA (${params.ema})
-        </label>
+      <!-- Chart View Selection Tabs -->
+      <div class="chart-view-selector">
+        <span class="selector-label">Display Chart:</span>
+        <div class="view-tabs" id="chart-view-tabs">
+          <button type="button" class="view-btn ${currentChartView === 'all' ? 'active' : ''}" data-view="all">Stacked All</button>
+          <button type="button" class="view-btn ${currentChartView === 'price' ? 'active' : ''}" data-view="price">Price & Overlays</button>
+          <button type="button" class="view-btn ${currentChartView === 'macd' ? 'active' : ''}" data-view="macd">MACD Oscillator</button>
+          <button type="button" class="view-btn ${currentChartView === 'rsi' ? 'active' : ''}" data-view="rsi">RSI Oscillator</button>
+        </div>
       </div>
 
       <div class="span-summary-bar" id="span-summary-bar"></div>
 
-      <div class="chart-container">
-        <canvas id="stockChart"></canvas>
+      <!-- Main Price Chart Card -->
+      <div class="chart-wrapper-card" id="card-price" style="display: ${currentChartView === 'all' || currentChartView === 'price' ? 'block' : 'none'};">
+        <div class="chart-card-header">
+          <h4 class="chart-card-title"><span class="dot dot-price"></span> Stock Price Movement & Overlays</h4>
+          <div class="overlay-toggles" id="overlay-toggles">
+            <span class="overlay-label">Overlays:</span>
+            <label class="toggle-chip ${activeOverlays.sma20 ? 'active' : ''}">
+              <input type="checkbox" id="chk-sma20" ${activeOverlays.sma20 ? 'checked' : ''} />
+              <span class="chip-color chip-cyan"></span> Short SMA (${params.smaShort})
+            </label>
+            <label class="toggle-chip ${activeOverlays.sma50 ? 'active' : ''}">
+              <input type="checkbox" id="chk-sma50" ${activeOverlays.sma50 ? 'checked' : ''} />
+              <span class="chip-color chip-amber"></span> Long SMA (${params.smaLong})
+            </label>
+            <label class="toggle-chip ${activeOverlays.ema20 ? 'active' : ''}">
+              <input type="checkbox" id="chk-ema20" ${activeOverlays.ema20 ? 'checked' : ''} />
+              <span class="chip-color chip-purple"></span> EMA (${params.ema})
+            </label>
+          </div>
+        </div>
+        <div class="subchart-canvas-container" style="height: ${currentChartView === 'all' ? '240px' : '320px'};">
+          <canvas id="stockChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Dedicated MACD Chart Card -->
+      <div class="chart-wrapper-card" id="card-macd" style="display: ${currentChartView === 'all' || currentChartView === 'macd' ? 'block' : 'none'};">
+        <div class="chart-card-header">
+          <h4 class="chart-card-title"><span class="dot dot-macd"></span> MACD Indicator Chart (${params.macdFast}, ${params.macdSlow}, ${params.macdSignal})</h4>
+          <span class="compound-item-val" style="font-size: 0.78rem;">MACD: ${macdLine !== null ? macdLine.toFixed(2) : 'N/A'} | Signal: ${macdSignal !== null ? macdSignal.toFixed(2) : 'N/A'}</span>
+        </div>
+        <div class="subchart-canvas-container" style="height: ${currentChartView === 'all' ? '200px' : '300px'};">
+          <canvas id="macdChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Dedicated RSI Chart Card -->
+      <div class="chart-wrapper-card" id="card-rsi" style="display: ${currentChartView === 'all' || currentChartView === 'rsi' ? 'block' : 'none'};">
+        <div class="chart-card-header">
+          <h4 class="chart-card-title"><span class="dot dot-rsi"></span> RSI Oscillator Chart (${params.rsi})</h4>
+          <span class="compound-item-val" style="font-size: 0.78rem;">RSI: ${rsiVal !== null ? rsiVal.toFixed(1) : 'N/A'} (${compound.rsiStatus})</span>
+        </div>
+        <div class="subchart-canvas-container" style="height: ${currentChartView === 'all' ? '200px' : '300px'};">
+          <canvas id="rsiChart"></canvas>
+        </div>
       </div>
     </div>
 
@@ -674,12 +718,32 @@ function renderResults(ticker, priceData, indicators, note) {
 
   // Attach event listeners to span buttons
   const controls = document.getElementById('time-span-controls');
-  controls.querySelectorAll('.span-btn').forEach(btn => {
+  controls?.querySelectorAll('.span-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       controls.querySelectorAll('.span-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentSpan = btn.dataset.span;
-      updateChart(currentPriceData, currentSpan, currentIndicators);
+      updateAllCharts(currentPriceData, currentSpan, currentIndicators);
+    });
+  });
+
+  // Attach event listeners to chart view selector tabs
+  const viewTabs = document.getElementById('chart-view-tabs');
+  viewTabs?.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      viewTabs.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentChartView = btn.dataset.view;
+
+      const cardPrice = document.getElementById('card-price');
+      const cardMacd = document.getElementById('card-macd');
+      const cardRsi = document.getElementById('card-rsi');
+
+      if (cardPrice) cardPrice.style.display = (currentChartView === 'all' || currentChartView === 'price') ? 'block' : 'none';
+      if (cardMacd) cardMacd.style.display = (currentChartView === 'all' || currentChartView === 'macd') ? 'block' : 'none';
+      if (cardRsi) cardRsi.style.display = (currentChartView === 'all' || currentChartView === 'rsi') ? 'block' : 'none';
+
+      updateAllCharts(currentPriceData, currentSpan, currentIndicators);
     });
   });
 
@@ -687,24 +751,24 @@ function renderResults(ticker, priceData, indicators, note) {
   document.getElementById('chk-sma20')?.addEventListener('change', (e) => {
     activeOverlays.sma20 = e.target.checked;
     e.target.parentElement.classList.toggle('active', activeOverlays.sma20);
-    updateChart(currentPriceData, currentSpan, currentIndicators);
+    updateAllCharts(currentPriceData, currentSpan, currentIndicators);
   });
   document.getElementById('chk-sma50')?.addEventListener('change', (e) => {
     activeOverlays.sma50 = e.target.checked;
     e.target.parentElement.classList.toggle('active', activeOverlays.sma50);
-    updateChart(currentPriceData, currentSpan, currentIndicators);
+    updateAllCharts(currentPriceData, currentSpan, currentIndicators);
   });
   document.getElementById('chk-ema20')?.addEventListener('change', (e) => {
     activeOverlays.ema20 = e.target.checked;
     e.target.parentElement.classList.toggle('active', activeOverlays.ema20);
-    updateChart(currentPriceData, currentSpan, currentIndicators);
+    updateAllCharts(currentPriceData, currentSpan, currentIndicators);
   });
 
   // Initial chart render
-  updateChart(priceData, currentSpan, indicators);
+  updateAllCharts(priceData, currentSpan, indicators);
 }
 
-function updateChart(priceData, span, indicators) {
+function updateAllCharts(priceData, span, indicators) {
   const filtered = filterDataByTimeSpan(priceData, span);
   if (!filtered.length) return;
 
@@ -729,15 +793,29 @@ function updateChart(priceData, span, indicators) {
     `;
   }
 
+  const startIndex = priceData.findIndex(b => b.date === firstBar.date);
+  const endIndex = priceData.findIndex(b => b.date === lastBar.date);
+
+  if (currentChartView === 'all' || currentChartView === 'price') {
+    renderPriceChart(filtered, priceData, isUp, indicators, startIndex, endIndex);
+  }
+  if (currentChartView === 'all' || currentChartView === 'macd') {
+    renderMacdChart(filtered, priceData, indicators, startIndex, endIndex);
+  }
+  if (currentChartView === 'all' || currentChartView === 'rsi') {
+    renderRsiChart(filtered, priceData, indicators, startIndex, endIndex);
+  }
+}
+
+function renderPriceChart(filtered, priceData, isUp, indicators, startIndex, endIndex) {
   const canvas = document.getElementById('stockChart');
   if (!canvas) return;
 
-  if (currentChartInstance) {
-    currentChartInstance.destroy();
+  if (currentPriceChartInstance) {
+    currentPriceChartInstance.destroy();
   }
 
   const ctx = canvas.getContext('2d');
-  
   const lineColor = isUp ? '#38BDF8' : '#F87171';
   const fillGradient = ctx.createLinearGradient(0, 0, 0, 320);
   if (isUp) {
@@ -747,10 +825,6 @@ function updateChart(priceData, span, indicators) {
     fillGradient.addColorStop(0, 'rgba(248, 113, 113, 0.25)');
     fillGradient.addColorStop(1, 'rgba(248, 113, 113, 0.0)');
   }
-
-  // Get slice indices for overlays matching filtered time span
-  const startIndex = priceData.findIndex(b => b.date === firstBar.date);
-  const endIndex = priceData.findIndex(b => b.date === lastBar.date);
 
   const labels = filtered.map(b => b.date);
   const dataPoints = filtered.map(b => b.close);
@@ -780,7 +854,7 @@ function updateChart(priceData, span, indicators) {
       datasets.push({
         label: `SMA (${smaShort})`,
         data: smaShortArr.slice(startIndex, endIndex + 1),
-        borderColor: '#06B6D4', // Cyan
+        borderColor: '#06B6D4',
         borderWidth: 1.8,
         borderDash: [4, 3],
         pointRadius: 0,
@@ -793,7 +867,7 @@ function updateChart(priceData, span, indicators) {
       datasets.push({
         label: `SMA (${smaLong})`,
         data: smaLongArr.slice(startIndex, endIndex + 1),
-        borderColor: '#F59E0B', // Amber
+        borderColor: '#F59E0B',
         borderWidth: 1.8,
         borderDash: [4, 3],
         pointRadius: 0,
@@ -806,7 +880,7 @@ function updateChart(priceData, span, indicators) {
       datasets.push({
         label: `EMA (${ema})`,
         data: emaArr.slice(startIndex, endIndex + 1),
-        borderColor: '#A855F7', // Purple
+        borderColor: '#A855F7',
         borderWidth: 1.8,
         pointRadius: 0,
         fill: false,
@@ -815,19 +889,13 @@ function updateChart(priceData, span, indicators) {
     }
   }
 
-  currentChartInstance = new Chart(ctx, {
+  currentPriceChartInstance = new Chart(ctx, {
     type: 'line',
-    data: {
-      labels: labels,
-      datasets: datasets
-    },
+    data: { labels, datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: {
-        mode: 'index',
-        intersect: false
-      },
+      interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: {
           display: true,
@@ -837,10 +905,7 @@ function updateChart(priceData, span, indicators) {
             color: '#CBD5E1',
             boxWidth: 12,
             boxHeight: 2,
-            font: {
-              family: "'JetBrains Mono', monospace",
-              size: 11
-            }
+            font: { family: "'JetBrains Mono', monospace", size: 11 }
           }
         },
         tooltip: {
@@ -851,47 +916,236 @@ function updateChart(priceData, span, indicators) {
           borderWidth: 1,
           padding: 12,
           callbacks: {
-            title: (items) => {
-              if (!items.length) return '';
-              const idx = items[0].dataIndex;
-              const bar = filtered[idx];
-              return `Date: ${bar.date}`;
-            },
-            label: (item) => {
-              const val = item.raw;
-              return `${item.dataset.label}: $${val !== null && val !== undefined ? Number(val).toFixed(2) : 'N/A'}`;
-            }
+            title: (items) => items.length ? `Date: ${filtered[items[0].dataIndex].date}` : '',
+            label: (item) => `${item.dataset.label}: $${item.raw !== null && item.raw !== undefined ? Number(item.raw).toFixed(2) : 'N/A'}`
           }
         }
       },
       scales: {
         x: {
-          grid: {
-            color: 'rgba(51, 65, 85, 0.3)',
-            drawBorder: false
-          },
-          ticks: {
-            color: '#94A3B8',
-            font: {
-              family: "'JetBrains Mono', monospace",
-              size: 11
-            },
-            maxTicksLimit: span === 'ALL' || span === '5Y' ? 8 : 6
-          }
+          grid: { color: 'rgba(51, 65, 85, 0.3)', drawBorder: false },
+          ticks: { color: '#94A3B8', font: { family: "'JetBrains Mono', monospace", size: 11 }, maxTicksLimit: 6 }
         },
         y: {
           position: 'right',
-          grid: {
-            color: 'rgba(51, 65, 85, 0.3)',
-            drawBorder: false
-          },
+          grid: { color: 'rgba(51, 65, 85, 0.3)', drawBorder: false },
           ticks: {
             color: '#94A3B8',
-            font: {
-              family: "'JetBrains Mono', monospace",
-              size: 11
-            },
-            callback: (value) => `$${value.toFixed(2)}`
+            font: { family: "'JetBrains Mono', monospace", size: 11 },
+            callback: (v) => `$${v.toFixed(2)}`
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderMacdChart(filtered, priceData, indicators, startIndex, endIndex) {
+  const canvas = document.getElementById('macdChart');
+  if (!canvas) return;
+
+  if (currentMacdChartInstance) {
+    currentMacdChartInstance.destroy();
+  }
+
+  const ctx = canvas.getContext('2d');
+  const labels = filtered.map(b => b.date);
+
+  const { macdObj } = indicators.fullArrays;
+  const macdSlice = macdObj.macdLine.slice(startIndex, endIndex + 1);
+  const signalSlice = macdObj.signalLine.slice(startIndex, endIndex + 1);
+  const histSlice = macdObj.histogram.slice(startIndex, endIndex + 1);
+
+  currentMacdChartInstance = new Chart(ctx, {
+    data: {
+      labels,
+      datasets: [
+        {
+          type: 'bar',
+          label: 'MACD Histogram',
+          data: histSlice,
+          backgroundColor: histSlice.map(v => v >= 0 ? 'rgba(52, 211, 153, 0.7)' : 'rgba(248, 113, 113, 0.7)'),
+          borderColor: histSlice.map(v => v >= 0 ? '#34D399' : '#F87171'),
+          borderWidth: 1,
+          barPercentage: 0.7
+        },
+        {
+          type: 'line',
+          label: 'MACD Line',
+          data: macdSlice,
+          borderColor: '#38BDF8',
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: false,
+          tension: 0.1
+        },
+        {
+          type: 'line',
+          label: 'Signal Line',
+          data: signalSlice,
+          borderColor: '#F59E0B',
+          borderWidth: 1.8,
+          borderDash: [3, 3],
+          pointRadius: 0,
+          fill: false,
+          tension: 0.1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          align: 'end',
+          labels: {
+            color: '#CBD5E1',
+            boxWidth: 12,
+            boxHeight: 2,
+            font: { family: "'JetBrains Mono', monospace", size: 11 }
+          }
+        },
+        tooltip: {
+          backgroundColor: '#0F172A',
+          titleColor: '#F8FAFC',
+          bodyColor: '#CBD5E1',
+          borderColor: '#334155',
+          borderWidth: 1,
+          padding: 10,
+          callbacks: {
+            title: (items) => items.length ? `Date: ${filtered[items[0].dataIndex].date}` : '',
+            label: (item) => `${item.dataset.label}: ${item.raw !== null && item.raw !== undefined ? Number(item.raw).toFixed(2) : 'N/A'}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(51, 65, 85, 0.3)', drawBorder: false },
+          ticks: { color: '#94A3B8', font: { family: "'JetBrains Mono', monospace", size: 11 }, maxTicksLimit: 6 }
+        },
+        y: {
+          position: 'right',
+          grid: { color: 'rgba(51, 65, 85, 0.3)', drawBorder: false },
+          ticks: {
+            color: '#94A3B8',
+            font: { family: "'JetBrains Mono', monospace", size: 11 },
+            callback: (v) => v.toFixed(2)
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderRsiChart(filtered, priceData, indicators, startIndex, endIndex) {
+  const canvas = document.getElementById('rsiChart');
+  if (!canvas) return;
+
+  if (currentRsiChartInstance) {
+    currentRsiChartInstance.destroy();
+  }
+
+  const ctx = canvas.getContext('2d');
+  const labels = filtered.map(b => b.date);
+
+  const { rsiArr } = indicators.fullArrays;
+  const rsiSlice = rsiArr.slice(startIndex, endIndex + 1);
+
+  const overboughtLine = new Array(filtered.length).fill(70);
+  const oversoldLine = new Array(filtered.length).fill(30);
+  const midLine = new Array(filtered.length).fill(50);
+
+  currentRsiChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Overbought (70)',
+          data: overboughtLine,
+          borderColor: 'rgba(248, 113, 113, 0.75)',
+          borderWidth: 1.5,
+          borderDash: [4, 4],
+          pointRadius: 0,
+          fill: false
+        },
+        {
+          label: 'Oversold (30)',
+          data: oversoldLine,
+          borderColor: 'rgba(52, 211, 153, 0.75)',
+          borderWidth: 1.5,
+          borderDash: [4, 4],
+          pointRadius: 0,
+          fill: false
+        },
+        {
+          label: 'Midline (50)',
+          data: midLine,
+          borderColor: 'rgba(148, 163, 184, 0.4)',
+          borderWidth: 1,
+          borderDash: [2, 4],
+          pointRadius: 0,
+          fill: false
+        },
+        {
+          label: 'RSI Oscillator',
+          data: rsiSlice,
+          borderColor: '#A855F7',
+          borderWidth: 2,
+          pointRadius: filtered.length > 100 ? 0 : 2,
+          pointHoverRadius: 5,
+          tension: 0.1,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          align: 'end',
+          labels: {
+            color: '#CBD5E1',
+            boxWidth: 12,
+            boxHeight: 2,
+            font: { family: "'JetBrains Mono', monospace", size: 11 }
+          }
+        },
+        tooltip: {
+          backgroundColor: '#0F172A',
+          titleColor: '#F8FAFC',
+          bodyColor: '#CBD5E1',
+          borderColor: '#334155',
+          borderWidth: 1,
+          padding: 10,
+          callbacks: {
+            title: (items) => items.length ? `Date: ${filtered[items[0].dataIndex].date}` : '',
+            label: (item) => `${item.dataset.label}: ${item.raw !== null && item.raw !== undefined ? Number(item.raw).toFixed(1) : 'N/A'}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(51, 65, 85, 0.3)', drawBorder: false },
+          ticks: { color: '#94A3B8', font: { family: "'JetBrains Mono', monospace", size: 11 }, maxTicksLimit: 6 }
+        },
+        y: {
+          position: 'right',
+          min: 0,
+          max: 100,
+          grid: { color: 'rgba(51, 65, 85, 0.3)', drawBorder: false },
+          ticks: {
+            color: '#94A3B8',
+            font: { family: "'JetBrains Mono', monospace", size: 11 },
+            stepSize: 20,
+            callback: (v) => `${v}`
           }
         }
       }
