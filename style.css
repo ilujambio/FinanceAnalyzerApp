@@ -43,7 +43,28 @@ h1, h2, h3, h4, .title {
 .brand-container {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1.25rem;
+}
+
+.brand-left {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.version-badge {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  padding: 0.3rem 0.65rem;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.15);
+  white-space: nowrap;
 }
 
 .logo-mark {
@@ -361,6 +382,351 @@ h1, h2, h3, h4, .title {
   height: 320px;
   width: 100%;
 }
+
+/* Compound RSI & MACD Highlight Card */
+.compound-card-section {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.75rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.compound-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.compound-tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+
+.compound-title {
+  margin: 0.2rem 0 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--ink-heading);
+}
+
+.compound-badge {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 0.4rem 0.85rem;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.compound-strong-buy {
+  background: rgba(52, 211, 153, 0.2);
+  color: #34D399;
+  border: 1px solid #34D399;
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.25);
+}
+
+.compound-buy {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38BDF8;
+  border: 1px solid #38BDF8;
+}
+
+.compound-neutral {
+  background: rgba(251, 191, 36, 0.18);
+  color: #FBBF24;
+  border: 1px solid #FBBF24;
+}
+
+.compound-sell {
+  background: rgba(251, 146, 60, 0.2);
+  color: #FB923C;
+  border: 1px solid #FB923C;
+}
+
+.compound-strong-sell {
+  background: rgba(248, 113, 113, 0.2);
+  color: #F87171;
+  border: 1px solid #F87171;
+  box-shadow: 0 0 12px rgba(248, 113, 113, 0.25);
+}
+
+.compound-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.compound-item {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+}
+
+.compound-item-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.2rem;
+}
+
+.compound-item-val {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink-heading);
+  margin-bottom: 0.3rem;
+}
+
+.compound-item-desc {
+  font-size: 0.82rem;
+  color: #CBD5E1;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.compound-footer {
+  border-top: 1px solid var(--line);
+  padding-top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.compound-summary-tag {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.compound-recommendation {
+  font-size: 0.88rem;
+  color: #E2E8F0;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Indicators Section */
+.indicators-section {
+  margin-bottom: 1.75rem;
+}
+
+.indicators-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1rem;
+}
+
+.indicator-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.indicator-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+.indicator-title {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-heading);
+}
+
+.indicator-status {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.status-bull {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34D399;
+}
+
+.status-bear {
+  background: rgba(248, 113, 113, 0.15);
+  color: #F87171;
+}
+
+.status-neutral {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94A3B8;
+}
+
+.indicator-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ind-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.ind-name {
+  color: var(--muted);
+}
+
+.ind-val {
+  font-weight: 700;
+  color: var(--ink-heading);
+}
+
+.ind-val.pos-text {
+  color: #34D399;
+}
+
+.ind-val.neg-text {
+  color: #F87171;
+}
+
+/* RSI Spectrum Gauge */
+.rsi-gauge-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.rsi-gauge-bar {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  display: flex;
+  overflow: hidden;
+  background: #0F172A;
+}
+
+.rsi-zone {
+  height: 100%;
+}
+
+.zone-oversold {
+  width: 30%;
+  background: rgba(52, 211, 153, 0.5);
+}
+
+.zone-neutral {
+  width: 40%;
+  background: rgba(148, 163, 184, 0.3);
+}
+
+.zone-overbought {
+  width: 30%;
+  background: rgba(248, 113, 113, 0.5);
+}
+
+.rsi-pointer {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  background: #F8FAFC;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--accent);
+}
+
+.rsi-gauge-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+}
+
+/* Chart Overlay Toggles */
+.overlay-toggles {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+  background: rgba(15, 23, 42, 0.5);
+  padding: 0.5rem 0.85rem;
+  border-radius: 6px;
+  border: 1px solid rgba(51, 65, 85, 0.4);
+}
+
+.overlay-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.toggle-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  background: #1E293B;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+  margin-top: 0;
+}
+
+.toggle-chip input[type="checkbox"] {
+  display: none;
+}
+
+.toggle-chip.active {
+  color: #F8FAFC;
+  background: #334155;
+  border-color: #475569;
+}
+
+.chip-color {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.chip-cyan { background: #06B6D4; }
+.chip-amber { background: #F59E0B; }
+.chip-purple { background: #A855F7; }
 
 /* Research Note Section */
 .note-section {
