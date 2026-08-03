@@ -428,7 +428,7 @@ function filterDataByTimeSpan(priceData, span) {
 let currentPriceChartInstance = null;
 let currentMacdChartInstance = null;
 let currentRsiChartInstance = null;
-let currentChartView = 'all'; // 'all' | 'price' | 'macd' | 'rsi'
+let currentChartView = 'price'; // 'price' | 'macd' | 'rsi'
 let currentIndicators = null;
 
 function renderResults(ticker, priceData, indicators, note) {
@@ -652,7 +652,6 @@ function renderResults(ticker, priceData, indicators, note) {
       <div class="chart-view-selector">
         <span class="selector-label">Display Chart:</span>
         <div class="view-tabs" id="chart-view-tabs">
-          <button type="button" class="view-btn ${currentChartView === 'all' ? 'active' : ''}" data-view="all">Stacked All</button>
           <button type="button" class="view-btn ${currentChartView === 'price' ? 'active' : ''}" data-view="price">Price & Overlays</button>
           <button type="button" class="view-btn ${currentChartView === 'macd' ? 'active' : ''}" data-view="macd">MACD Oscillator</button>
           <button type="button" class="view-btn ${currentChartView === 'rsi' ? 'active' : ''}" data-view="rsi">RSI Oscillator</button>
@@ -662,7 +661,7 @@ function renderResults(ticker, priceData, indicators, note) {
       <div class="span-summary-bar" id="span-summary-bar"></div>
 
       <!-- Main Price Chart Card -->
-      <div class="chart-wrapper-card" id="card-price" style="display: ${currentChartView === 'all' || currentChartView === 'price' ? 'block' : 'none'};">
+      <div class="chart-wrapper-card" id="card-price" style="display: ${currentChartView === 'price' ? 'block' : 'none'};">
         <div class="chart-card-header">
           <h4 class="chart-card-title"><span class="dot dot-price"></span> Stock Price Movement & Overlays</h4>
           <div class="overlay-toggles" id="overlay-toggles">
@@ -681,29 +680,29 @@ function renderResults(ticker, priceData, indicators, note) {
             </label>
           </div>
         </div>
-        <div class="subchart-canvas-container" style="height: ${currentChartView === 'all' ? '240px' : '320px'};">
+        <div class="subchart-canvas-container" style="height: ${currentChartView === 'price' ? '360px' : '480px'};">
           <canvas id="stockChart"></canvas>
         </div>
       </div>
 
       <!-- Dedicated MACD Chart Card -->
-      <div class="chart-wrapper-card" id="card-macd" style="display: ${currentChartView === 'all' || currentChartView === 'macd' ? 'block' : 'none'};">
+      <div class="chart-wrapper-card" id="card-macd" style="display: ${currentChartView === 'price' || currentChartView === 'macd' ? 'block' : 'none'};">
         <div class="chart-card-header">
           <h4 class="chart-card-title"><span class="dot dot-macd"></span> MACD Indicator Chart (${params.macdFast}, ${params.macdSlow}, ${params.macdSignal})</h4>
           <span class="compound-item-val" style="font-size: 0.78rem;">MACD: ${macdLine !== null ? macdLine.toFixed(2) : 'N/A'} | Signal: ${macdSignal !== null ? macdSignal.toFixed(2) : 'N/A'}</span>
         </div>
-        <div class="subchart-canvas-container" style="height: ${currentChartView === 'all' ? '200px' : '300px'};">
+        <div class="subchart-canvas-container" style="height: ${currentChartView === 'price' ? '300px' : '450px'};">
           <canvas id="macdChart"></canvas>
         </div>
       </div>
 
       <!-- Dedicated RSI Chart Card -->
-      <div class="chart-wrapper-card" id="card-rsi" style="display: ${currentChartView === 'all' || currentChartView === 'rsi' ? 'block' : 'none'};">
+      <div class="chart-wrapper-card" id="card-rsi" style="display: ${currentChartView === 'price' || currentChartView === 'rsi' ? 'block' : 'none'};">
         <div class="chart-card-header">
           <h4 class="chart-card-title"><span class="dot dot-rsi"></span> RSI Oscillator Chart (${params.rsi})</h4>
           <span class="compound-item-val" style="font-size: 0.78rem;">RSI: ${rsiVal !== null ? rsiVal.toFixed(1) : 'N/A'} (${compound.rsiStatus})</span>
         </div>
-        <div class="subchart-canvas-container" style="height: ${currentChartView === 'all' ? '200px' : '300px'};">
+        <div class="subchart-canvas-container" style="height: ${currentChartView === 'price' ? '300px' : '450px'};">
           <canvas id="rsiChart"></canvas>
         </div>
       </div>
@@ -739,9 +738,9 @@ function renderResults(ticker, priceData, indicators, note) {
       const cardMacd = document.getElementById('card-macd');
       const cardRsi = document.getElementById('card-rsi');
 
-      if (cardPrice) cardPrice.style.display = (currentChartView === 'all' || currentChartView === 'price') ? 'block' : 'none';
-      if (cardMacd) cardMacd.style.display = (currentChartView === 'all' || currentChartView === 'macd') ? 'block' : 'none';
-      if (cardRsi) cardRsi.style.display = (currentChartView === 'all' || currentChartView === 'rsi') ? 'block' : 'none';
+      if (cardPrice) cardPrice.style.display = (currentChartView === 'price') ? 'block' : 'none';
+      if (cardMacd) cardMacd.style.display = (currentChartView === 'price' || currentChartView === 'macd') ? 'block' : 'none';
+      if (cardRsi) cardRsi.style.display = (currentChartView === 'price' || currentChartView === 'rsi') ? 'block' : 'none';
 
       updateAllCharts(currentPriceData, currentSpan, currentIndicators);
     });
@@ -796,13 +795,13 @@ function updateAllCharts(priceData, span, indicators) {
   const startIndex = priceData.findIndex(b => b.date === firstBar.date);
   const endIndex = priceData.findIndex(b => b.date === lastBar.date);
 
-  if (currentChartView === 'all' || currentChartView === 'price') {
+  if (currentChartView === 'price') {
     renderPriceChart(filtered, priceData, isUp, indicators, startIndex, endIndex);
   }
-  if (currentChartView === 'all' || currentChartView === 'macd') {
+  if (currentChartView === 'price' || currentChartView === 'macd') {
     renderMacdChart(filtered, priceData, indicators, startIndex, endIndex);
   }
-  if (currentChartView === 'all' || currentChartView === 'rsi') {
+  if (currentChartView === 'price' || currentChartView === 'rsi') {
     renderRsiChart(filtered, priceData, indicators, startIndex, endIndex);
   }
 }
