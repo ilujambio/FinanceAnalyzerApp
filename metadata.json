@@ -1,0 +1,6 @@
+{
+  "name": "Oyster Capital Finance Analyzer",
+  "description": "Financial equity analysis platform by Oyster Capital, combining market data with GenAI intelligence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
