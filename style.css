@@ -1,12 +1,12 @@
 :root {
   --ink: #CBD5E1;           /* Silver-blue body text */
-  --ink-heading: #F1F5F9;   /* Bright silver-blue for titles */
-  --paper: #0B1120;         /* Deep dark background */
-  --panel: #151D30;         /* Dark silver-slate panel background */
-  --line: #26354A;          /* Silver-blueish border line */
+  --ink-heading: #F8FAFC;   /* Bright silver-white for titles & typed text */
+  --paper: #1E293B;         /* Lighter silver-slate app background */
+  --panel: #0F172A;         /* Dark navy panel background */
+  --line: #334155;          /* High-contrast silver border line */
   --accent: #38BDF8;        /* Vibrant silver-blue highlight */
   --accent-glow: #0284C7;
-  --muted: #94A3B8;         /* Muted silver slate */
+  --muted: #94A3B8;         /* High-contrast silver slate */
   --error: #F87171;         /* Soft red error */
   --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Courier New', monospace;
@@ -19,7 +19,7 @@
 body {
   margin: 0;
   background-color: var(--paper);
-  background-image: radial-gradient(circle at 50% 0%, #1E293B 0%, #0B1120 75%);
+  background-image: radial-gradient(circle at 50% 0%, #29384D 0%, #1E293B 75%);
   color: var(--ink);
   font-family: var(--font-main);
   line-height: 1.6;
@@ -125,29 +125,31 @@ label {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #94A3B8;
+  color: #CBD5E1;
   margin-top: 0.25rem;
 }
 
 input {
-  padding: 0.65rem 0.85rem;
-  border: 1px solid var(--line);
+  padding: 0.7rem 0.9rem;
+  border: 1px solid #475569;
   border-radius: 6px;
   font-size: 0.95rem;
   font-family: var(--font-main);
-  background: #0B1120;
-  color: var(--ink-heading);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  background: var(--paper);
+  color: #F8FAFC;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
 }
 
 input::placeholder {
-  color: #475569;
+  color: #94A3B8;
+  opacity: 1;
 }
 
 input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+  background: #26334D;
 }
 
 button {
