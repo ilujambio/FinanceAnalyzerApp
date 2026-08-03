@@ -65,6 +65,41 @@
         <label for="openrouter-key">OpenRouter API key</label>
         <input id="openrouter-key" name="openrouter-key" type="password" placeholder="sk-or-..." required />
 
+        <!-- Technical Indicator Parameters Settings -->
+        <fieldset class="indicator-settings">
+          <legend>Technical Indicator Periods & Parameters</legend>
+          <div class="param-grid">
+            <div class="param-group">
+              <label for="sma-short-period">Short SMA (days)</label>
+              <input id="sma-short-period" type="number" min="2" max="200" value="20" required />
+            </div>
+            <div class="param-group">
+              <label for="sma-long-period">Long SMA (days)</label>
+              <input id="sma-long-period" type="number" min="5" max="300" value="50" required />
+            </div>
+            <div class="param-group">
+              <label for="ema-period">EMA (days)</label>
+              <input id="ema-period" type="number" min="2" max="200" value="20" required />
+            </div>
+            <div class="param-group">
+              <label for="rsi-period">RSI Period (days)</label>
+              <input id="rsi-period" type="number" min="2" max="100" value="14" required />
+            </div>
+            <div class="param-group">
+              <label for="macd-fast">MACD Fast (days)</label>
+              <input id="macd-fast" type="number" min="2" max="100" value="12" required />
+            </div>
+            <div class="param-group">
+              <label for="macd-slow">MACD Slow (days)</label>
+              <input id="macd-slow" type="number" min="5" max="200" value="26" required />
+            </div>
+            <div class="param-group">
+              <label for="macd-signal">MACD Signal (days)</label>
+              <input id="macd-signal" type="number" min="2" max="50" value="9" required />
+            </div>
+          </div>
+        </fieldset>
+
         <button type="submit">Run Analysis</button>
       </form>
     </section>

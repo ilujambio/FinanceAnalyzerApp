@@ -247,34 +247,7 @@ form.addEventListener('submit', async (event) => {
     currentTicker = ticker;
     currentSpan = '1Y'; // Default to 1 Year view
 
-    // Precalculate full dataset indicators
-    const closes = priceData.map(b => b.close);
-    const sma20 = calculateSMA(closes, 20);
-    const sma50 = calculateSMA(closes, 50);
-    const ema12 = calculateEMA(closes, 12);
-    const ema26 = calculateEMA(closes, 26);
-    const ema50 = calculateEMA(closes, 50);
-    const macdObj = calculateMACD(closes, 12, 26, 9);
-    const rsi14 = calculateRSI(closes, 14);
-
-    const latestIdx = priceData.length - 1;
-    const latestRsi = rsi14[latestIdx];
-    const compound = analyzeCompoundSignal(latestRsi, macdObj);
-
-    const indicators = {
-      sma20: sma20[latestIdx],
-      sma50: sma50[latestIdx],
-      ema12: ema12[latestIdx],
-      ema26: ema26[latestIdx],
-      ema50: ema50[latestIdx],
-      macdLine: macdObj.macdLine[latestIdx],
-      macdSignal: macdObj.signalLine[latestIdx],
-      macdHist: macdObj.histogram[latestIdx],
-      rsi14: latestRsi,
-      compound,
-      // Pass arrays for charting
-      fullArrays: { sma20, sma50, ema12, ema26, ema50, macdObj, rsi14 }
-    };
+    const indicators = computeIndicatorsFromInputs(priceData);
 
     const note = await getResearchNote(ticker, priceData, indicators, openRouterKey);
 
@@ -283,6 +256,46 @@ form.addEventListener('submit', async (event) => {
     results.innerHTML = `<p class="error">Something went wrong: ${err.message}</p>`;
   }
 });
+
+function getIndicatorParams() {
+  const smaShort = Math.max(2, parseInt(document.getElementById('sma-short-period')?.value || '20', 10));
+  const smaLong = Math.max(3, parseInt(document.getElementById('sma-long-period')?.value || '50', 10));
+  const ema = Math.max(2, parseInt(document.getElementById('ema-period')?.value || '20', 10));
+  const rsi = Math.max(2, parseInt(document.getElementById('rsi-period')?.value || '14', 10));
+  const macdFast = Math.max(2, parseInt(document.getElementById('macd-fast')?.value || '12', 10));
+  const macdSlow = Math.max(3, parseInt(document.getElementById('macd-slow')?.value || '26', 10));
+  const macdSignal = Math.max(2, parseInt(document.getElementById('macd-signal')?.value || '9', 10));
+
+  return { smaShort, smaLong, ema, rsi, macdFast, macdSlow, macdSignal };
+}
+
+function computeIndicatorsFromInputs(priceData) {
+  const params = getIndicatorParams();
+  const closes = priceData.map(b => b.close);
+
+  const smaShortArr = calculateSMA(closes, params.smaShort);
+  const smaLongArr = calculateSMA(closes, params.smaLong);
+  const emaArr = calculateEMA(closes, params.ema);
+  const macdObj = calculateMACD(closes, params.macdFast, params.macdSlow, params.macdSignal);
+  const rsiArr = calculateRSI(closes, params.rsi);
+
+  const latestIdx = priceData.length - 1;
+  const latestRsi = rsiArr[latestIdx];
+  const compound = analyzeCompoundSignal(latestRsi, macdObj);
+
+  return {
+    params,
+    smaShortVal: smaShortArr[latestIdx],
+    smaLongVal: smaLongArr[latestIdx],
+    emaVal: emaArr[latestIdx],
+    macdLine: macdObj.macdLine[latestIdx],
+    macdSignal: macdObj.signalLine[latestIdx],
+    macdHist: macdObj.histogram[latestIdx],
+    rsiVal: latestRsi,
+    compound,
+    fullArrays: { smaShortArr, smaLongArr, emaArr, macdObj, rsiArr }
+  };
+}
 
 // Twelve Data price history
 async function fetchPriceData(ticker, apiKey) {
@@ -319,12 +332,13 @@ async function getResearchNote(ticker, priceData, indicators, apiKey) {
   const first = priceData[0];
   const latest = priceData[priceData.length - 1];
   const pctChange = ((latest.close - first.close) / first.close) * 100;
+  const p = indicators.params;
 
   const techSummary = [
-    `SMA(20): $${indicators.sma20 ? indicators.sma20.toFixed(2) : 'N/A'}, SMA(50): $${indicators.sma50 ? indicators.sma50.toFixed(2) : 'N/A'} (${indicators.sma20 > indicators.sma50 ? 'Golden Alignment' : 'Death Alignment'})`,
-    `EMA(12): $${indicators.ema12 ? indicators.ema12.toFixed(2) : 'N/A'}, EMA(26): $${indicators.ema26 ? indicators.ema26.toFixed(2) : 'N/A'}, EMA(50): $${indicators.ema50 ? indicators.ema50.toFixed(2) : 'N/A'}`,
-    `MACD (12,26,9): Line $${indicators.macdLine ? indicators.macdLine.toFixed(2) : 'N/A'}, Signal $${indicators.macdSignal ? indicators.macdSignal.toFixed(2) : 'N/A'}, Hist $${indicators.macdHist ? indicators.macdHist.toFixed(2) : 'N/A'}`,
-    `RSI (14): ${indicators.rsi14 ? indicators.rsi14.toFixed(1) : 'N/A'} (${indicators.compound.rsiStatus})`,
+    `SMA(${p.smaShort}): $${indicators.smaShortVal ? indicators.smaShortVal.toFixed(2) : 'N/A'}, SMA(${p.smaLong}): $${indicators.smaLongVal ? indicators.smaLongVal.toFixed(2) : 'N/A'} (${indicators.smaShortVal > indicators.smaLongVal ? 'Golden Alignment' : 'Death Alignment'})`,
+    `EMA(${p.ema}): $${indicators.emaVal ? indicators.emaVal.toFixed(2) : 'N/A'}`,
+    `MACD (${p.macdFast},${p.macdSlow},${p.macdSignal}): Line $${indicators.macdLine ? indicators.macdLine.toFixed(2) : 'N/A'}, Signal $${indicators.macdSignal ? indicators.macdSignal.toFixed(2) : 'N/A'}, Hist $${indicators.macdHist ? indicators.macdHist.toFixed(2) : 'N/A'}`,
+    `RSI (${p.rsi}): ${indicators.rsiVal ? indicators.rsiVal.toFixed(1) : 'N/A'} (${indicators.compound.rsiStatus})`,
     `Compound RSI+MACD Rating: ${indicators.compound.rating} (Score: ${indicators.compound.score > 0 ? '+' : ''}${indicators.compound.score})`
   ].join('\n- ');
 
@@ -428,13 +442,13 @@ function renderResults(ticker, priceData, indicators, note) {
     ? Math.min(100, Math.max(0, ((latest.close - latest.low) / dayRangeSpread) * 100))
     : 50;
 
-  const { compound, sma20, sma50, ema12, ema26, ema50, macdLine, macdSignal, macdHist, rsi14 } = indicators;
+  const { compound, smaShortVal, smaLongVal, emaVal, macdLine, macdSignal, macdHist, rsiVal, params } = indicators;
 
   // Golden cross / Death cross status
-  const isGoldenCross = sma20 && sma50 && sma20 > sma50;
+  const isGoldenCross = smaShortVal && smaLongVal && smaShortVal > smaLongVal;
 
   // RSI position gauge percentage
-  const rsiGaugePos = rsi14 !== null ? Math.min(100, Math.max(0, rsi14)) : 50;
+  const rsiGaugePos = rsiVal !== null ? Math.min(100, Math.max(0, rsiVal)) : 50;
 
   results.innerHTML = `
     <div class="ticker-header-bar">
@@ -500,12 +514,12 @@ function renderResults(ticker, priceData, indicators, note) {
       </div>
       <div class="compound-grid">
         <div class="compound-item">
-          <span class="compound-item-label">RSI (14) Signal</span>
+          <span class="compound-item-label">RSI (${params.rsi}) Signal</span>
           <span class="compound-item-val">${compound.rsiStatus}</span>
           <p class="compound-item-desc">${compound.rsiDetail}</p>
         </div>
         <div class="compound-item">
-          <span class="compound-item-label">MACD (12,26,9) Signal</span>
+          <span class="compound-item-label">MACD (${params.macdFast},${params.macdSlow},${params.macdSignal}) Signal</span>
           <span class="compound-item-val">${compound.macdStatus}</span>
           <p class="compound-item-desc">${compound.macdDetail}</p>
         </div>
@@ -523,19 +537,19 @@ function renderResults(ticker, priceData, indicators, note) {
         <!-- SMA Card -->
         <div class="indicator-card">
           <div class="indicator-header">
-            <span class="indicator-title">SMA (Moving Averages)</span>
+            <span class="indicator-title">SMA Moving Averages</span>
             <span class="indicator-status ${isGoldenCross ? 'status-bull' : 'status-bear'}">
               ${isGoldenCross ? 'Golden Alignment' : 'Death Alignment'}
             </span>
           </div>
           <div class="indicator-body">
             <div class="ind-row">
-              <span class="ind-name">SMA (20)</span>
-              <span class="ind-val">$${sma20 ? sma20.toFixed(2) : 'N/A'}</span>
+              <span class="ind-name">Short SMA (${params.smaShort})</span>
+              <span class="ind-val">$${smaShortVal ? smaShortVal.toFixed(2) : 'N/A'}</span>
             </div>
             <div class="ind-row">
-              <span class="ind-name">SMA (50)</span>
-              <span class="ind-val">$${sma50 ? sma50.toFixed(2) : 'N/A'}</span>
+              <span class="ind-name">Long SMA (${params.smaLong})</span>
+              <span class="ind-val">$${smaLongVal ? smaLongVal.toFixed(2) : 'N/A'}</span>
             </div>
           </div>
         </div>
@@ -543,23 +557,15 @@ function renderResults(ticker, priceData, indicators, note) {
         <!-- EMA Card -->
         <div class="indicator-card">
           <div class="indicator-header">
-            <span class="indicator-title">EMA (Exponential)</span>
+            <span class="indicator-title">EMA Exponential</span>
             <span class="indicator-status status-neutral">
               Trend Gauge
             </span>
           </div>
           <div class="indicator-body">
             <div class="ind-row">
-              <span class="ind-name">EMA (12)</span>
-              <span class="ind-val">$${ema12 ? ema12.toFixed(2) : 'N/A'}</span>
-            </div>
-            <div class="ind-row">
-              <span class="ind-name">EMA (26)</span>
-              <span class="ind-val">$${ema26 ? ema26.toFixed(2) : 'N/A'}</span>
-            </div>
-            <div class="ind-row">
-              <span class="ind-name">EMA (50)</span>
-              <span class="ind-val">$${ema50 ? ema50.toFixed(2) : 'N/A'}</span>
+              <span class="ind-name">EMA (${params.ema})</span>
+              <span class="ind-val">$${emaVal ? emaVal.toFixed(2) : 'N/A'}</span>
             </div>
           </div>
         </div>
@@ -567,7 +573,7 @@ function renderResults(ticker, priceData, indicators, note) {
         <!-- MACD Card -->
         <div class="indicator-card">
           <div class="indicator-header">
-            <span class="indicator-title">MACD (12, 26, 9)</span>
+            <span class="indicator-title">MACD (${params.macdFast}, ${params.macdSlow}, ${params.macdSignal})</span>
             <span class="indicator-status ${macdHist >= 0 ? 'status-bull' : 'status-bear'}">
               ${macdHist >= 0 ? 'Bullish Hist' : 'Bearish Hist'}
             </span>
@@ -593,15 +599,15 @@ function renderResults(ticker, priceData, indicators, note) {
         <!-- RSI Card -->
         <div class="indicator-card">
           <div class="indicator-header">
-            <span class="indicator-title">RSI (14)</span>
-            <span class="indicator-status ${rsi14 >= 70 ? 'status-bear' : rsi14 <= 30 ? 'status-bull' : 'status-neutral'}">
+            <span class="indicator-title">RSI (${params.rsi})</span>
+            <span class="indicator-status ${rsiVal >= 70 ? 'status-bear' : rsiVal <= 30 ? 'status-bull' : 'status-neutral'}">
               ${compound.rsiStatus}
             </span>
           </div>
           <div class="indicator-body">
             <div class="ind-row">
               <span class="ind-name">RSI Level</span>
-              <span class="ind-val">${rsi14 !== null ? rsi14.toFixed(1) : 'N/A'} / 100</span>
+              <span class="ind-val">${rsiVal !== null ? rsiVal.toFixed(1) : 'N/A'} / 100</span>
             </div>
             <div class="rsi-gauge-container">
               <div class="rsi-gauge-bar">
@@ -640,15 +646,15 @@ function renderResults(ticker, priceData, indicators, note) {
         <span class="overlay-label">Chart Overlays:</span>
         <label class="toggle-chip ${activeOverlays.sma20 ? 'active' : ''}">
           <input type="checkbox" id="chk-sma20" ${activeOverlays.sma20 ? 'checked' : ''} />
-          <span class="chip-color chip-cyan"></span> SMA 20
+          <span class="chip-color chip-cyan"></span> Short SMA (${params.smaShort})
         </label>
         <label class="toggle-chip ${activeOverlays.sma50 ? 'active' : ''}">
           <input type="checkbox" id="chk-sma50" ${activeOverlays.sma50 ? 'checked' : ''} />
-          <span class="chip-color chip-amber"></span> SMA 50
+          <span class="chip-color chip-amber"></span> Long SMA (${params.smaLong})
         </label>
         <label class="toggle-chip ${activeOverlays.ema20 ? 'active' : ''}">
           <input type="checkbox" id="chk-ema20" ${activeOverlays.ema20 ? 'checked' : ''} />
-          <span class="chip-color chip-purple"></span> EMA 20
+          <span class="chip-color chip-purple"></span> EMA (${params.ema})
         </label>
       </div>
 
@@ -681,11 +687,6 @@ function renderResults(ticker, priceData, indicators, note) {
   document.getElementById('chk-sma20')?.addEventListener('change', (e) => {
     activeOverlays.sma20 = e.target.checked;
     e.target.parentElement.classList.toggle('active', activeOverlays.sma20);
-    updateChart(currentPriceData, currentSpan, currentIndicators);
-  });
-  document.getElementById('chk-chk-sma50')?.addEventListener('change', (e) => {
-    activeOverlays.sma50 = e.target.checked;
-    e.target.parentElement.classList.toggle('active', activeOverlays.sma50);
     updateChart(currentPriceData, currentSpan, currentIndicators);
   });
   document.getElementById('chk-sma50')?.addEventListener('change', (e) => {
@@ -771,15 +772,14 @@ function updateChart(priceData, span, indicators) {
     }
   ];
 
-  if (indicators && indicators.fullArrays) {
-    const { sma20, sma50 } = indicators.fullArrays;
-    const closes = priceData.map(b => b.close);
-    const ema20 = calculateEMA(closes, 20);
+  if (indicators && indicators.fullArrays && indicators.params) {
+    const { smaShortArr, smaLongArr, emaArr } = indicators.fullArrays;
+    const { smaShort, smaLong, ema } = indicators.params;
 
-    if (activeOverlays.sma20 && sma20) {
+    if (activeOverlays.sma20 && smaShortArr) {
       datasets.push({
-        label: 'SMA (20)',
-        data: sma20.slice(startIndex, endIndex + 1),
+        label: `SMA (${smaShort})`,
+        data: smaShortArr.slice(startIndex, endIndex + 1),
         borderColor: '#06B6D4', // Cyan
         borderWidth: 1.8,
         borderDash: [4, 3],
@@ -789,10 +789,10 @@ function updateChart(priceData, span, indicators) {
       });
     }
 
-    if (activeOverlays.sma50 && sma50) {
+    if (activeOverlays.sma50 && smaLongArr) {
       datasets.push({
-        label: 'SMA (50)',
-        data: sma50.slice(startIndex, endIndex + 1),
+        label: `SMA (${smaLong})`,
+        data: smaLongArr.slice(startIndex, endIndex + 1),
         borderColor: '#F59E0B', // Amber
         borderWidth: 1.8,
         borderDash: [4, 3],
@@ -802,10 +802,10 @@ function updateChart(priceData, span, indicators) {
       });
     }
 
-    if (activeOverlays.ema20) {
+    if (activeOverlays.ema20 && emaArr) {
       datasets.push({
-        label: 'EMA (20)',
-        data: ema20.slice(startIndex, endIndex + 1),
+        label: `EMA (${ema})`,
+        data: emaArr.slice(startIndex, endIndex + 1),
         borderColor: '#A855F7', // Purple
         borderWidth: 1.8,
         pointRadius: 0,
@@ -898,5 +898,29 @@ function updateChart(priceData, span, indicators) {
     }
   });
 }
+
+// Live update indicators when user modifies parameter inputs while stock data is active
+const paramInputIds = [
+  'sma-short-period',
+  'sma-long-period',
+  'ema-period',
+  'rsi-period',
+  'macd-fast',
+  'macd-slow',
+  'macd-signal'
+];
+
+paramInputIds.forEach(id => {
+  document.getElementById(id)?.addEventListener('input', () => {
+    if (currentPriceData && currentPriceData.length) {
+      const updatedIndicators = computeIndicatorsFromInputs(currentPriceData);
+      currentIndicators = updatedIndicators;
+      
+      // Update DOM values without clearing research note
+      const existingNote = document.querySelector('.note-content')?.innerText || '';
+      renderResults(currentTicker, currentPriceData, updatedIndicators, existingNote);
+    }
+  });
+});
 
 
