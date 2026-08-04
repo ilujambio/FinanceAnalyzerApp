@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Oyster Capital — Finance Analyzer</title>
+  <title>Oyster Capital — Finance Analyzer & Market Intelligence</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -48,87 +48,261 @@
           <p class="subtitle">Finance Analyzer & Market Intelligence</p>
         </div>
       </div>
-      <div class="version-badge" title="App Version">v1.0.6</div>
+      <div class="version-badge" title="App Major Version">v3.0.0</div>
     </div>
   </header>
 
+  <!-- Modular Main Navigation Tabs -->
+  <nav class="app-nav">
+    <div class="nav-tabs-container" id="main-nav-tabs">
+      <button type="button" class="nav-tab active" data-tab="technical">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+        <span>Technical Analyzer</span>
+      </button>
+
+      <button type="button" class="nav-tab" data-tab="news">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m2 13a2 2 0 0 1-2-2V7m2 13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"></path>
+          <line x1="7" y1="9" x2="13" y2="9"></line>
+          <line x1="7" y1="13" x2="13" y2="13"></line>
+        </svg>
+        <span>Market News</span>
+      </button>
+
+      <button type="button" class="nav-tab" data-tab="settings">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <span>API Keys & Storage</span>
+      </button>
+
+      <button type="button" class="nav-tab nav-tab-add" id="btn-add-tab" title="Add future modular tab">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>+ Add Module</span>
+      </button>
+    </div>
+  </nav>
+
   <main class="app-main">
-    <section class="panel">
-      <form id="ticker-form">
-        <!-- Main Form Inputs in Horizontal Alignment Rows -->
-        <div class="inputs-row">
-          <div class="field-group flex-ticker">
-            <label for="ticker">Ticker Symbol</label>
-            <input id="ticker" name="ticker" type="text" placeholder="e.g. AAPL, MSFT, NVDA" required />
-          </div>
+    <!-- TAB PANE 1: Technical & AI Analyzer -->
+    <div class="tab-pane active" id="tab-pane-technical">
+      <section class="panel">
+        <form id="ticker-form">
+          <!-- Main Form Inputs in Horizontal Alignment Rows with LocalStorage badges -->
+          <div class="inputs-row">
+            <div class="field-group flex-ticker">
+              <label for="ticker">Ticker Symbol</label>
+              <input id="ticker" name="ticker" type="text" placeholder="e.g. AAPL, MSFT, NVDA" required />
+            </div>
 
-          <div class="field-group flex-key">
-            <label for="twelvedata-key">Twelve Data API key</label>
-            <input id="twelvedata-key" name="twelvedata-key" type="password" placeholder="Twelve Data key" required />
-          </div>
+            <div class="field-group flex-key">
+              <label for="twelvedata-key">
+                Twelve Data API key
+                <span class="storage-badge" id="badge-twelvedata">Saved</span>
+              </label>
+              <input id="twelvedata-key" name="twelvedata-key" type="password" placeholder="Twelve Data key" required />
+            </div>
 
-          <div class="field-group flex-key">
-            <label for="openrouter-key">OpenRouter API key</label>
-            <input id="openrouter-key" name="openrouter-key" type="password" placeholder="sk-or-..." required />
+            <div class="field-group flex-key">
+              <label for="openrouter-key">
+                OpenRouter API key
+                <span class="storage-badge" id="badge-openrouter">Saved</span>
+              </label>
+              <input id="openrouter-key" name="openrouter-key" type="password" placeholder="sk-or-..." required />
+            </div>
+
+            <div class="field-group flex-key">
+              <label for="newsdata-key">
+                NewsData API key
+                <span class="storage-badge" id="badge-newsdata">Saved</span>
+              </label>
+              <input id="newsdata-key" name="newsdata-key" type="password" placeholder="pub_..." />
+            </div>
+          </div>
+          <p class="field-hint">
+            API keys are automatically saved in local storage. Free Twelve Data (<a href="https://twelvedata.com/pricing" target="_blank" rel="noopener">twelvedata.com</a>) & NewsData (<a href="https://newsdata.io/" target="_blank" rel="noopener">newsdata.io</a>) keys available.
+          </p>
+
+          <!-- Technical Indicator Parameters Settings in Two Horizontal Rows -->
+          <fieldset class="indicator-settings">
+            <legend>Technical Indicator Periods & Parameters</legend>
+            <div class="param-rows-container">
+              <!-- Row 1: Moving Averages & RSI -->
+              <div class="param-row">
+                <div class="param-group">
+                  <label for="sma-short-period">Short SMA (days)</label>
+                  <input id="sma-short-period" type="number" min="2" max="200" value="20" required />
+                </div>
+                <div class="param-group">
+                  <label for="sma-long-period">Long SMA (days)</label>
+                  <input id="sma-long-period" type="number" min="5" max="300" value="50" required />
+                </div>
+                <div class="param-group">
+                  <label for="ema-period">EMA (days)</label>
+                  <input id="ema-period" type="number" min="2" max="200" value="20" required />
+                </div>
+                <div class="param-group">
+                  <label for="rsi-period">RSI Period (days)</label>
+                  <input id="rsi-period" type="number" min="2" max="100" value="14" required />
+                </div>
+              </div>
+
+              <!-- Row 2: MACD Settings -->
+              <div class="param-row">
+                <div class="param-group">
+                  <label for="macd-fast">MACD Fast (days)</label>
+                  <input id="macd-fast" type="number" min="2" max="100" value="12" required />
+                </div>
+                <div class="param-group">
+                  <label for="macd-slow">MACD Slow (days)</label>
+                  <input id="macd-slow" type="number" min="5" max="200" value="26" required />
+                </div>
+                <div class="param-group">
+                  <label for="macd-signal">MACD Signal (days)</label>
+                  <input id="macd-signal" type="number" min="2" max="50" value="9" required />
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <button type="submit">Run Analysis</button>
+        </form>
+      </section>
+
+      <section class="panel" id="results">
+        <p class="placeholder">Results and AI analysis will appear here once you submit a stock ticker.</p>
+      </section>
+    </div>
+
+    <!-- TAB PANE 2: Market News -->
+    <div class="tab-pane" id="tab-pane-news" style="display: none;">
+      <section class="panel">
+        <div class="news-header-bar">
+          <div>
+            <h2>Market News & Sentiment Feed</h2>
+            <p class="section-subtext">Real-time business and financial news powered by NewsData API</p>
           </div>
         </div>
-        <p class="field-hint">The free Twelve Data plan covers all US stocks and ETFs, limited to 8 requests/minute and 800/day. Get a free key at <a href="https://twelvedata.com/pricing" target="_blank" rel="noopener">twelvedata.com</a>.</p>
 
-        <!-- Technical Indicator Parameters Settings in Two Horizontal Rows -->
-        <fieldset class="indicator-settings">
-          <legend>Technical Indicator Periods & Parameters</legend>
-          <div class="param-rows-container">
-            <!-- Row 1: Moving Averages & RSI -->
-            <div class="param-row">
-              <div class="param-group">
-                <label for="sma-short-period">Short SMA (days)</label>
-                <input id="sma-short-period" type="number" min="2" max="200" value="20" required />
+        <form id="news-search-form" class="news-search-form">
+          <div class="news-search-row">
+            <div class="field-group flex-1">
+              <label for="news-query">Keyword or Ticker Search</label>
+
+              <input id="news-query" type="text" placeholder="e.g. AAPL, Wall Street, Federal Reserve, Tech earnings" />
+            </div>
+            <button type="submit" class="btn-news-search">Fetch News</button>
+          </div>
+
+          <div class="news-quick-chips">
+            <span class="chip-label">Quick Topics:</span>
+            <button type="button" class="quick-chip" data-query="Stock Market">Stock Market</button>
+            <button type="button" class="quick-chip" data-query="Federal Reserve">Fed & Rates</button>
+            <button type="button" class="quick-chip" data-query="Tech Earnings">Tech Earnings</button>
+            <button type="button" class="quick-chip" data-query="Crypto">Crypto</button>
+            <button type="button" class="quick-chip" data-query="NVIDIA">NVIDIA</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel" id="news-results">
+        <p class="placeholder">Click "Fetch News" or select a topic to load real-time market headlines.</p>
+      </section>
+    </div>
+
+    <!-- TAB PANE 3: API Keys & Local Storage Management -->
+    <div class="tab-pane" id="tab-pane-settings" style="display: none;">
+      <section class="panel">
+        <h2>API Key Management & Local Storage</h2>
+        <p class="section-subtext">Keys stored here persist safely in your browser's local storage so you don't need to enter them on future visits.</p>
+
+        <form id="settings-form" class="settings-form">
+          <div class="settings-card">
+            <div class="setting-item">
+              <div class="setting-info">
+                <label for="settings-twelvedata">Twelve Data API Key</label>
+                <p>Required for fetching stock price histories and calculating technical indicators.</p>
               </div>
-              <div class="param-group">
-                <label for="sma-long-period">Long SMA (days)</label>
-                <input id="sma-long-period" type="number" min="5" max="300" value="50" required />
-              </div>
-              <div class="param-group">
-                <label for="ema-period">EMA (days)</label>
-                <input id="ema-period" type="number" min="2" max="200" value="20" required />
-              </div>
-              <div class="param-group">
-                <label for="rsi-period">RSI Period (days)</label>
-                <input id="rsi-period" type="number" min="2" max="100" value="14" required />
+              <div class="setting-input-wrapper">
+                <input id="settings-twelvedata" type="password" placeholder="Twelve Data key" />
+                <button type="button" class="btn-toggle-pass" data-for="settings-twelvedata">Show</button>
               </div>
             </div>
 
-            <!-- Row 2: MACD Settings -->
-            <div class="param-row">
-              <div class="param-group">
-                <label for="macd-fast">MACD Fast (days)</label>
-                <input id="macd-fast" type="number" min="2" max="100" value="12" required />
+            <div class="setting-item">
+              <div class="setting-info">
+                <label for="settings-openrouter">OpenRouter API Key</label>
+                <p>Required for generating AI qualitative research notes (Claude, Gemini, etc.).</p>
               </div>
-              <div class="param-group">
-                <label for="macd-slow">MACD Slow (days)</label>
-                <input id="macd-slow" type="number" min="5" max="200" value="26" required />
+              <div class="setting-input-wrapper">
+                <input id="settings-openrouter" type="password" placeholder="sk-or-..." />
+                <button type="button" class="btn-toggle-pass" data-for="settings-openrouter">Show</button>
               </div>
-              <div class="param-group">
-                <label for="macd-signal">MACD Signal (days)</label>
-                <input id="macd-signal" type="number" min="2" max="50" value="9" required />
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <label for="settings-newsdata">NewsData API Key</label>
+                <p>Used for fetching real-time financial market news & company headlines.</p>
+              </div>
+              <div class="setting-input-wrapper">
+                <input id="settings-newsdata" type="password" placeholder="pub_..." />
+                <button type="button" class="btn-toggle-pass" data-for="settings-newsdata">Show</button>
               </div>
             </div>
           </div>
-        </fieldset>
 
-        <button type="submit">Run Analysis</button>
-      </form>
-    </section>
-
-    <section class="panel" id="results">
-      <p class="placeholder">Results and AI analysis will appear here once you submit a stock ticker.</p>
-    </section>
+          <div class="settings-actions">
+            <button type="submit" class="btn-save-keys">Save All Keys to LocalStorage</button>
+            <button type="button" id="btn-clear-keys" class="btn-clear-keys">Clear Stored Keys</button>
+          </div>
+          <p class="settings-status" id="settings-status"></p>
+        </form>
+      </section>
+    </div>
   </main>
 
+  <!-- Add Future Module Dialog Modal -->
+  <div class="modal-backdrop" id="add-module-modal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Extensible Module Architecture</h3>
+        <button type="button" class="modal-close" id="btn-close-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>This application is architected to allow adding custom analytical tabs seamlessly. Choose a new module module to enable or register a custom module:</p>
+        <div class="module-options-grid">
+          <div class="module-option" data-mod="earnings">
+            <h4>📅 Earnings Calendar</h4>
+            <p>Track quarterly earnings announcements and surprise history.</p>
+          </div>
+          <div class="module-option" data-mod="portfolio">
+            <h4>💼 Portfolio Risk Simulator</h4>
+            <p>Calculate VaR, Sharpe ratios, and sector exposure.</p>
+          </div>
+          <div class="module-option" data-mod="esg">
+            <h4>🌱 ESG & Sustainability</h4>
+            <p>Evaluate corporate governance and environmental impact ratings.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="btn-cancel-modal">Close</button>
+      </div>
+    </div>
+  </div>
+
   <footer class="app-footer">
-    <p>Oyster Capital Finance Analyzer — Powered by Twelve Data & GenAI stock analysis engine.</p>
+    <p>Oyster Capital Finance Analyzer — Powered by Twelve Data, NewsData & GenAI stock analysis engine.</p>
   </footer>
 
   <script type="module" src="./main.js"></script>
 </body>
 </html>
+

@@ -1,6 +1,92 @@
 import { Chart, registerables } from 'chart.js';
 Chart.register(...registerables);
 
+// Local Storage Key Persistence Engine
+const STORAGE_KEYS = {
+  twelvedata: 'oyster_twelvedata_key',
+  openrouter: 'oyster_openrouter_key',
+  newsdata: 'oyster_newsdata_key'
+};
+
+function getStoredKey(keyName) {
+  try {
+    return localStorage.getItem(STORAGE_KEYS[keyName]) || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+function setStoredKey(keyName, val) {
+  try {
+    if (val) {
+      localStorage.setItem(STORAGE_KEYS[keyName], val);
+    } else {
+      localStorage.removeItem(STORAGE_KEYS[keyName]);
+    }
+  } catch (e) {
+    console.warn('LocalStorage access issue:', e);
+  }
+}
+
+function updateKeyBadges() {
+  ['twelvedata', 'openrouter', 'newsdata'].forEach(k => {
+    const val = getStoredKey(k);
+    const badge = document.getElementById(`badge-${k}`);
+    if (badge) {
+      if (val) {
+        badge.innerText = 'Saved';
+        badge.className = 'storage-badge badge-saved';
+      } else {
+        badge.innerText = 'Not Set';
+        badge.className = 'storage-badge badge-empty';
+      }
+    }
+  });
+}
+
+function syncKeyInputs() {
+  const twelveVal = getStoredKey('twelvedata');
+  const openrouterVal = getStoredKey('openrouter');
+  const newsdataVal = getStoredKey('newsdata');
+
+  const inputs = {
+    twelvedata: [document.getElementById('twelvedata-key'), document.getElementById('settings-twelvedata')],
+    openrouter: [document.getElementById('openrouter-key'), document.getElementById('settings-openrouter')],
+    newsdata: [document.getElementById('newsdata-key'), document.getElementById('settings-newsdata')]
+  };
+
+  if (twelveVal) inputs.twelvedata.forEach(el => el && (el.value = twelveVal));
+  if (openrouterVal) inputs.openrouter.forEach(el => el && (el.value = openrouterVal));
+  if (newsdataVal) inputs.newsdata.forEach(el => el && (el.value = newsdataVal));
+
+  updateKeyBadges();
+}
+
+function setupKeyAutoSave() {
+  const keyMap = [
+    { inputId: 'twelvedata-key', key: 'twelvedata', mirrorId: 'settings-twelvedata' },
+    { inputId: 'settings-twelvedata', key: 'twelvedata', mirrorId: 'twelvedata-key' },
+    { inputId: 'openrouter-key', key: 'openrouter', mirrorId: 'settings-openrouter' },
+    { inputId: 'settings-openrouter', key: 'openrouter', mirrorId: 'openrouter-key' },
+    { inputId: 'newsdata-key', key: 'newsdata', mirrorId: 'settings-newsdata' },
+    { inputId: 'settings-newsdata', key: 'newsdata', mirrorId: 'newsdata-key' }
+  ];
+
+  keyMap.forEach(({ inputId, key, mirrorId }) => {
+    const inputEl = document.getElementById(inputId);
+    const mirrorEl = document.getElementById(mirrorId);
+
+    if (inputEl) {
+      inputEl.addEventListener('input', () => {
+        const val = inputEl.value.trim();
+        setStoredKey(key, val);
+        if (mirrorEl) mirrorEl.value = val;
+        updateKeyBadges();
+      });
+    }
+  });
+}
+
 const form = document.getElementById('ticker-form');
 const results = document.getElementById('results');
 
@@ -232,6 +318,13 @@ form.addEventListener('submit', async (event) => {
   const ticker = document.getElementById('ticker').value.trim().toUpperCase();
   const twelveDataKey = document.getElementById('twelvedata-key').value.trim();
   const openRouterKey = document.getElementById('openrouter-key').value.trim();
+  const newsDataKey = document.getElementById('newsdata-key')?.value.trim();
+
+  // Save non-empty keys to local storage
+  setStoredKey('twelvedata', twelveDataKey);
+  setStoredKey('openrouter', openRouterKey);
+  if (newsDataKey) setStoredKey('newsdata', newsDataKey);
+  updateKeyBadges();
 
   results.innerHTML = `
     <div class="loading-state">
@@ -1175,5 +1268,337 @@ paramInputIds.forEach(id => {
     }
   });
 });
+
+// Modular Tab Manager & Extensible Tab Architecture
+const TabManager = {
+  activeTab: 'technical',
+  init() {
+    const tabs = document.querySelectorAll('#main-nav-tabs .nav-tab[data-tab]');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const targetTab = tab.getAttribute('data-tab');
+        this.switchTab(targetTab);
+      });
+    });
+
+    // Add module button listener
+    document.getElementById('btn-add-tab')?.addEventListener('click', () => {
+      this.openAddModuleModal();
+    });
+
+    document.getElementById('btn-close-modal')?.addEventListener('click', () => {
+      this.closeAddModuleModal();
+    });
+
+    document.getElementById('btn-cancel-modal')?.addEventListener('click', () => {
+      this.closeAddModuleModal();
+    });
+
+    // Module option clicks in modal
+    document.querySelectorAll('.module-option').forEach(option => {
+      option.addEventListener('click', () => {
+        const modType = option.getAttribute('data-mod');
+        const modName = option.querySelector('h4')?.innerText || 'New Module';
+        this.addCustomTab(modType, modName);
+        this.closeAddModuleModal();
+      });
+    });
+  },
+
+  switchTab(tabId) {
+    this.activeTab = tabId;
+    document.querySelectorAll('#main-nav-tabs .nav-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.getAttribute('data-tab') === tabId);
+    });
+
+    document.querySelectorAll('.tab-pane').forEach(pane => {
+      if (pane.id === `tab-pane-${tabId}`) {
+        pane.style.display = 'block';
+        pane.classList.add('active');
+      } else {
+        pane.style.display = 'none';
+        pane.classList.remove('active');
+      }
+    });
+
+    // Re-render chart instances when returning to technical tab to ensure correct canvas geometry
+    if (tabId === 'technical' && currentPriceData && currentPriceData.length) {
+      setTimeout(() => {
+        updateAllCharts(currentPriceData, currentSpan, currentIndicators);
+      }, 50);
+    }
+  },
+
+  openAddModuleModal() {
+    const modal = document.getElementById('add-module-modal');
+    if (modal) modal.style.display = 'flex';
+  },
+
+  closeAddModuleModal() {
+    const modal = document.getElementById('add-module-modal');
+    if (modal) modal.style.display = 'none';
+  },
+
+  addCustomTab(modId, modName) {
+    const navTabsContainer = document.getElementById('main-nav-tabs');
+    const addBtn = document.getElementById('btn-add-tab');
+    
+    // Check if tab already exists
+    if (document.querySelector(`.nav-tab[data-tab="${modId}"]`)) {
+      this.switchTab(modId);
+      return;
+    }
+
+    // Create nav tab
+    const newTabBtn = document.createElement('button');
+    newTabBtn.type = 'button';
+    newTabBtn.className = 'nav-tab';
+    newTabBtn.setAttribute('data-tab', modId);
+    newTabBtn.innerHTML = `
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="9" y1="3" x2="9" y2="21"></line>
+      </svg>
+      <span>${escapeHtml(modName)}</span>
+    `;
+
+    newTabBtn.addEventListener('click', () => {
+      this.switchTab(modId);
+    });
+
+    navTabsContainer.insertBefore(newTabBtn, addBtn);
+
+    // Create corresponding tab pane
+    const appMain = document.querySelector('.app-main');
+    const newPane = document.createElement('div');
+    newPane.className = 'tab-pane';
+    newPane.id = `tab-pane-${modId}`;
+    newPane.style.display = 'none';
+    newPane.innerHTML = `
+      <section class="panel">
+        <h2>${escapeHtml(modName)}</h2>
+        <p class="section-subtext">Modular extension panel active and ready for analytical integrations.</p>
+        <div class="module-placeholder-box">
+          <div class="placeholder-icon">⚙️</div>
+          <h3>${escapeHtml(modName)} Configured</h3>
+          <p>This tab is active as part of your Oyster Capital Modular Architecture. Customize data feeds, indicators, or external webhooks here.</p>
+        </div>
+      </section>
+    `;
+
+    appMain.appendChild(newPane);
+    this.switchTab(modId);
+  }
+};
+
+// NewsData API Market News Feed Engine
+async function fetchMarketNews(query = '') {
+  const newsResultsContainer = document.getElementById('news-results');
+  if (!newsResultsContainer) return;
+
+  const newsDataKey = getStoredKey('newsdata') || document.getElementById('newsdata-key')?.value.trim();
+
+  if (!newsDataKey) {
+    newsResultsContainer.innerHTML = `
+      <div class="news-key-warning">
+        <div class="warning-icon">🔑</div>
+        <h3>NewsData API Key Required</h3>
+        <p>To fetch live financial market headlines, enter your free NewsData key in the form inputs or in the <strong>API Keys & Storage</strong> tab.</p>
+        <a href="https://newsdata.io/" target="_blank" rel="noopener" class="btn-warning-link">Get Free NewsData Key</a>
+      </div>
+    `;
+    return;
+  }
+
+  newsResultsContainer.innerHTML = `
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Fetching latest financial news ${query ? `for "<strong>${escapeHtml(query)}</strong>"` : 'from global markets'}...</p>
+    </div>
+  `;
+
+  try {
+    const qParam = query.trim() ? encodeURIComponent(query.trim()) : 'stock market';
+    const url = `https://newsdata.io/api/1/news?apikey=${newsDataKey}&q=${qParam}&category=business,technology&language=en`;
+    const res = await fetch(url);
+    const body = await res.text();
+
+    let raw;
+    try {
+      raw = JSON.parse(body);
+    } catch {
+      throw new Error(body.trim() || 'News fetch response parse error');
+    }
+
+    if (raw && raw.status === 'error') {
+      const errMsg = raw.results?.message || raw.message || 'NewsData API returned an error';
+      throw new Error(errMsg);
+    }
+
+    const articles = raw.results || [];
+    if (!articles.length) {
+      newsResultsContainer.innerHTML = `
+        <div class="empty-news">
+          <p>No headlines found for "${escapeHtml(query || 'stock market')}". Try another ticker or keyword search.</p>
+        </div>
+      `;
+      return;
+    }
+
+    renderNewsArticles(articles, query);
+  } catch (err) {
+    newsResultsContainer.innerHTML = `
+      <div class="error-box">
+        <p class="error">Failed to load news: ${escapeHtml(err.message)}</p>
+        <p class="error-hint">Verify your NewsData API key in the API Keys tab.</p>
+      </div>
+    `;
+  }
+}
+
+function renderNewsArticles(articles, query) {
+  const newsResultsContainer = document.getElementById('news-results');
+  if (!newsResultsContainer) return;
+
+  const html = `
+    <div class="news-results-header">
+      <h3>Latest Headlines ${query ? `for "${escapeHtml(query)}"` : 'Market News'}</h3>
+      <span class="news-count-badge">${articles.length} Stories</span>
+    </div>
+    <div class="news-grid">
+      ${articles.map(art => {
+        const title = art.title || 'Untitled Article';
+        const source = art.source_name || art.source_id || 'Financial Wire';
+        const desc = art.description ? (art.description.length > 180 ? art.description.slice(0, 180) + '...' : art.description) : 'Click link below to read full story coverage.';
+        const link = art.link || '#';
+        const dateStr = art.pubDate ? new Date(art.pubDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent';
+
+        return `
+          <article class="news-card">
+            <div class="news-card-meta">
+              <span class="news-source-tag">${escapeHtml(source)}</span>
+              <span class="news-date-tag">${escapeHtml(dateStr)}</span>
+            </div>
+            <h4 class="news-card-title">${escapeHtml(title)}</h4>
+            <p class="news-card-snippet">${escapeHtml(desc)}</p>
+            <div class="news-card-footer">
+              <a href="${escapeHtml(link)}" target="_blank" rel="noopener" class="news-read-btn">
+                <span>Read Story</span>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </a>
+            </div>
+          </article>
+        `;
+      }).join('')}
+    </div>
+  `;
+
+  newsResultsContainer.innerHTML = html;
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// News Tab Event Handlers
+const newsForm = document.getElementById('news-search-form');
+if (newsForm) {
+  newsForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const query = document.getElementById('news-query')?.value || '';
+    fetchMarketNews(query);
+  });
+}
+
+document.querySelectorAll('.quick-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const query = chip.getAttribute('data-query');
+    const input = document.getElementById('news-query');
+    if (input) input.value = query;
+    fetchMarketNews(query);
+  });
+});
+
+// Settings Tab Handlers
+const settingsForm = document.getElementById('settings-form');
+if (settingsForm) {
+  settingsForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const tw = document.getElementById('settings-twelvedata')?.value.trim();
+    const op = document.getElementById('settings-openrouter')?.value.trim();
+    const nw = document.getElementById('settings-newsdata')?.value.trim();
+
+    setStoredKey('twelvedata', tw);
+    setStoredKey('openrouter', op);
+    setStoredKey('newsdata', nw);
+
+    syncKeyInputs();
+
+    const statusEl = document.getElementById('settings-status');
+    if (statusEl) {
+      statusEl.className = 'settings-status status-success';
+      statusEl.innerText = '✓ API keys successfully updated and saved to local storage!';
+      setTimeout(() => { statusEl.innerText = ''; }, 3500);
+    }
+  });
+}
+
+const clearKeysBtn = document.getElementById('btn-clear-keys');
+if (clearKeysBtn) {
+  clearKeysBtn.addEventListener('click', () => {
+    if (confirm('Are you sure you want to clear all stored API keys from local storage?')) {
+      setStoredKey('twelvedata', '');
+      setStoredKey('openrouter', '');
+      setStoredKey('newsdata', '');
+      
+      ['twelvedata-key', 'settings-twelvedata', 'openrouter-key', 'settings-openrouter', 'newsdata-key', 'settings-newsdata'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+
+      syncKeyInputs();
+
+      const statusEl = document.getElementById('settings-status');
+      if (statusEl) {
+        statusEl.className = 'settings-status status-info';
+        statusEl.innerText = 'Cleared all API keys from local storage.';
+        setTimeout(() => { statusEl.innerText = ''; }, 3500);
+      }
+    }
+  });
+}
+
+// Toggle password show/hide buttons
+document.querySelectorAll('.btn-toggle-pass').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const targetId = btn.getAttribute('data-for');
+    const input = document.getElementById(targetId);
+    if (input) {
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerText = 'Hide';
+      } else {
+        input.type = 'password';
+        btn.innerText = 'Show';
+      }
+    }
+  });
+});
+
+// Initialization
+syncKeyInputs();
+setupKeyAutoSave();
+TabManager.init();
+
 
 
