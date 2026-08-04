@@ -1315,6 +1315,15 @@ const TabManager = {
         updateAllCharts(currentPriceData, currentSpan, currentIndicators);
       }, 50);
     }
+
+    // Auto-fetch top 5 news when switching to Market News tab if empty or showing placeholder
+    if (tabId === 'news') {
+      const newsResults = document.getElementById('news-results');
+      if (newsResults && (newsResults.querySelector('.placeholder') || !newsResults.querySelector('.news-grid'))) {
+        const query = document.getElementById('news-query')?.value || '';
+        fetchMarketNews(query);
+      }
+    }
   },
 
   openAddModuleModal() {
@@ -1433,7 +1442,9 @@ async function fetchMarketNews(query = '') {
       return;
     }
 
-    renderNewsArticles(articles, query);
+    // Limit to top 5 articles
+    const topArticles = articles.slice(0, 5);
+    renderNewsArticles(topArticles, query);
   } catch (err) {
     newsResultsContainer.innerHTML = `
       <div class="error-box">
@@ -1448,13 +1459,16 @@ function renderNewsArticles(articles, query) {
   const newsResultsContainer = document.getElementById('news-results');
   if (!newsResultsContainer) return;
 
+  // Ensure top 5 maximum
+  const top5 = articles.slice(0, 5);
+
   const html = `
     <div class="news-results-header">
-      <h3>Latest Headlines ${query ? `for "${escapeHtml(query)}"` : 'Market News'}</h3>
-      <span class="news-count-badge">${articles.length} Stories</span>
+      <h3>Top 5 Headlines ${query ? `for "${escapeHtml(query)}"` : 'in Market News'}</h3>
+      <span class="news-count-badge">Top ${top5.length} Stories</span>
     </div>
     <div class="news-grid">
-      ${articles.map(art => {
+      ${top5.map(art => {
         const title = art.title || 'Untitled Article';
         const source = art.source_name || art.source_id || 'Financial Wire';
         const desc = art.description ? (art.description.length > 180 ? art.description.slice(0, 180) + '...' : art.description) : 'Click link below to read full story coverage.';
