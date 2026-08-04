@@ -1261,12 +1261,28 @@ paramInputIds.forEach(id => {
 const TabManager = {
   activeTab: 'technical',
   init() {
-    const tabs = document.querySelectorAll('#main-nav-tabs .nav-tab[data-tab]');
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        const targetTab = tab.getAttribute('data-tab');
-        this.switchTab(targetTab);
+    // Event delegation on navigation container for tab buttons
+    const navContainer = document.getElementById('main-nav-tabs');
+    if (navContainer) {
+      navContainer.addEventListener('click', (e) => {
+        const tabBtn = e.target.closest('.nav-tab[data-tab]');
+        if (tabBtn) {
+          const targetTab = tabBtn.getAttribute('data-tab');
+          if (targetTab) {
+            this.switchTab(targetTab);
+          }
+        }
       });
+    }
+
+    // Global click handler for cross-tab jump links
+    document.addEventListener('click', (e) => {
+      const jumpLink = e.target.closest('#link-to-settings, .switch-to-settings, [data-switch-tab]');
+      if (jumpLink) {
+        e.preventDefault();
+        const targetTab = jumpLink.getAttribute('data-switch-tab') || 'settings';
+        this.switchTab(targetTab);
+      }
     });
 
     // Add module button listener
@@ -1294,11 +1310,15 @@ const TabManager = {
   },
 
   switchTab(tabId) {
+    if (!tabId) return;
     this.activeTab = tabId;
+
+    // 1. Update active tab button highlight
     document.querySelectorAll('#main-nav-tabs .nav-tab').forEach(tab => {
       tab.classList.toggle('active', tab.getAttribute('data-tab') === tabId);
     });
 
+    // 2. Toggle visibility on tab panes
     document.querySelectorAll('.tab-pane').forEach(pane => {
       if (pane.id === `tab-pane-${tabId}`) {
         pane.style.display = 'block';
@@ -1309,20 +1329,23 @@ const TabManager = {
       }
     });
 
-    // Re-render chart instances when returning to technical tab to ensure correct canvas geometry
-    if (tabId === 'technical' && currentPriceData && currentPriceData.length) {
-      setTimeout(() => {
-        updateAllCharts(currentPriceData, currentSpan, currentIndicators);
-      }, 50);
-    }
-
-    // Auto-fetch top 5 news when switching to Market News tab if empty or showing placeholder
-    if (tabId === 'news') {
-      const newsResults = document.getElementById('news-results');
-      if (newsResults && (newsResults.querySelector('.placeholder') || !newsResults.querySelector('.news-grid'))) {
-        const query = document.getElementById('news-query')?.value || '';
-        fetchMarketNews(query);
+    // 3. Post-switch side-effects (safe execution wrapper)
+    try {
+      if (tabId === 'technical' && currentPriceData && currentPriceData.length) {
+        setTimeout(() => {
+          updateAllCharts(currentPriceData, currentSpan, currentIndicators);
+        }, 50);
       }
+
+      if (tabId === 'news') {
+        const newsResults = document.getElementById('news-results');
+        if (newsResults && (newsResults.querySelector('.placeholder') || !newsResults.querySelector('.news-grid'))) {
+          const query = document.getElementById('news-query')?.value || '';
+          fetchMarketNews(query);
+        }
+      }
+    } catch (err) {
+      console.warn('Post-tab switch execution warning:', err);
     }
   },
 
