@@ -48,7 +48,7 @@
           <p class="subtitle">Finance Analyzer & Market Intelligence</p>
         </div>
       </div>
-      <div class="version-badge" title="App Major Version">v3.0.0</div>
+      <div class="version-badge" title="App Major Version">v4.0.1</div>
     </div>
   </header>
 
@@ -60,6 +60,14 @@
           <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
         </svg>
         <span>Technical Analyzer</span>
+      </button>
+
+      <button type="button" class="nav-tab" data-tab="portfolio">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+          <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+        </svg>
+        <span>Portfolio Optimization</span>
       </button>
 
       <button type="button" class="nav-tab" data-tab="news">
@@ -94,39 +102,15 @@
     <div class="tab-pane active" id="tab-pane-technical">
       <section class="panel">
         <form id="ticker-form">
-          <!-- Main Form Inputs in Horizontal Alignment Rows with LocalStorage badges -->
+          <!-- Main Ticker Input Row -->
           <div class="inputs-row">
             <div class="field-group flex-ticker">
               <label for="ticker">Ticker Symbol</label>
               <input id="ticker" name="ticker" type="text" placeholder="e.g. AAPL, MSFT, NVDA" required />
             </div>
-
-            <div class="field-group flex-key">
-              <label for="twelvedata-key">
-                Twelve Data API key
-                <span class="storage-badge" id="badge-twelvedata">Saved</span>
-              </label>
-              <input id="twelvedata-key" name="twelvedata-key" type="password" placeholder="Twelve Data key" required />
-            </div>
-
-            <div class="field-group flex-key">
-              <label for="openrouter-key">
-                OpenRouter API key
-                <span class="storage-badge" id="badge-openrouter">Saved</span>
-              </label>
-              <input id="openrouter-key" name="openrouter-key" type="password" placeholder="sk-or-..." required />
-            </div>
-
-            <div class="field-group flex-key">
-              <label for="newsdata-key">
-                NewsData API key
-                <span class="storage-badge" id="badge-newsdata">Saved</span>
-              </label>
-              <input id="newsdata-key" name="newsdata-key" type="password" placeholder="pub_..." />
-            </div>
           </div>
           <p class="field-hint">
-            API keys are automatically saved in local storage. Free Twelve Data (<a href="https://twelvedata.com/pricing" target="_blank" rel="noopener">twelvedata.com</a>) & NewsData (<a href="https://newsdata.io/" target="_blank" rel="noopener">newsdata.io</a>) keys available.
+            To manage Twelve Data, OpenRouter, and NewsData API keys, navigate to the <a href="#" id="link-to-settings">API Keys & Storage</a> tab.
           </p>
 
           <!-- Technical Indicator Parameters Settings in Two Horizontal Rows -->
@@ -177,6 +161,89 @@
 
       <section class="panel" id="results">
         <p class="placeholder">Results and AI analysis will appear here once you submit a stock ticker.</p>
+      </section>
+    </div>
+
+    <!-- TAB PANE: Portfolio Optimization -->
+    <div class="tab-pane" id="tab-pane-portfolio" style="display: none;">
+      <section class="panel">
+        <div class="port-header">
+          <div>
+            <h2>Modern Portfolio Theory & Markowitz Optimizer</h2>
+            <p class="section-subtext">Construct mean-variance optimal portfolios across 5 assets using historical returns, covariance matrix ($\Sigma$), and Sharpe ratio maximization.</p>
+          </div>
+        </div>
+
+        <form id="portfolio-form" class="portfolio-form">
+          <!-- 5 Stock Ticker Inputs Row -->
+          <fieldset class="port-fieldset">
+            <legend>Select 5 Portfolio Assets (Tickers)</legend>
+            <div class="port-tickers-grid">
+              <div class="field-group">
+                <label for="port-ticker-0">Asset 1</label>
+                <input id="port-ticker-0" type="text" value="AAPL" placeholder="e.g. AAPL" required />
+              </div>
+              <div class="field-group">
+                <label for="port-ticker-1">Asset 2</label>
+                <input id="port-ticker-1" type="text" value="MSFT" placeholder="e.g. MSFT" required />
+              </div>
+              <div class="field-group">
+                <label for="port-ticker-2">Asset 3</label>
+                <input id="port-ticker-2" type="text" value="GOOGL" placeholder="e.g. GOOGL" required />
+              </div>
+              <div class="field-group">
+                <label for="port-ticker-3">Asset 4</label>
+                <input id="port-ticker-3" type="text" value="AMZN" placeholder="e.g. AMZN" required />
+              </div>
+              <div class="field-group">
+                <label for="port-ticker-4">Asset 5</label>
+                <input id="port-ticker-4" type="text" value="NVDA" placeholder="e.g. NVDA" required />
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Parameters & Objective Row -->
+          <div class="port-params-row">
+            <div class="field-group flex-1">
+              <label for="port-objective">Optimization Objective</label>
+              <select id="port-objective" class="select-input">
+                <option value="max_sharpe" selected>🎯 Maximize Sharpe Ratio (Tangency Portfolio)</option>
+                <option value="min_vol">🛡️ Minimize Volatility (Global Minimum Variance)</option>
+                <option value="inv_vol">⚖️ Inverse Volatility Weighting</option>
+              </select>
+            </div>
+
+            <div class="field-group flex-small">
+              <label for="port-timeframe">Historical Horizon</label>
+              <select id="port-timeframe" class="select-input">
+                <option value="1y" selected>1 Year (252 Trading Days)</option>
+                <option value="3y">3 Years (756 Trading Days)</option>
+                <option value="5y">5 Years (1260 Trading Days)</option>
+              </select>
+            </div>
+
+            <div class="field-group flex-small">
+              <label for="port-rf-rate">Risk-Free Rate ($R_f$)</label>
+              <input id="port-rf-rate" type="number" step="0.1" min="0" max="20" value="4.0" placeholder="4.0%" required />
+            </div>
+          </div>
+
+          <!-- Quick Preset Buttons -->
+          <div class="port-presets-bar">
+            <span class="chip-label">Quick Portfolios:</span>
+            <button type="button" class="quick-chip" data-port="AAPL,MSFT,GOOGL,AMZN,NVDA">Big Tech 5</button>
+            <button type="button" class="quick-chip" data-port="NVDA,AMD,TSM,AVGO,QCOM">Semis & Chips</button>
+            <button type="button" class="quick-chip" data-port="JPM,BAC,GS,MS,C">Financials</button>
+            <button type="button" class="quick-chip" data-port="AAPL,JNJ,PG,JPM,XOM">Balanced Blue Chips</button>
+          </div>
+
+          <button type="submit" class="btn-run-port">Run Portfolio Optimization</button>
+        </form>
+      </section>
+
+      <!-- Portfolio Optimization Results Panel -->
+      <section class="panel" id="portfolio-results">
+        <p class="placeholder">Select 5 tickers and click "Run Portfolio Optimization" to view covariance matrices, optimal weights, and the Markowitz Efficient Frontier.</p>
       </section>
     </div>
 
